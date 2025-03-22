@@ -17,6 +17,7 @@ NVIDIA Tesla V100 显卡驱动自动化管理套件
 🚀 **快速开始**：  
 ```powershell
 irm https://raw.githubusercontent.com/yourname/repo/main/Setup-AutoCheck.ps1 | iex
+```
 
 📚 **使用场景**：
 - 本地深度学习工作站搭建
