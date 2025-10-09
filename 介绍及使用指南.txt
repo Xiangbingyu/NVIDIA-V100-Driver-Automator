@@ -1,0 +1,37 @@
+三个脚本：Install-NVIDIA.ps1，Check-Driver.ps1，Setup-AutoCheck.ps1
+
+
+简介：
+Install-NVIDIA.ps1：为自动安装驱动，修改注册表，并进行重启的代码
+
+Check-Driver.ps1：为检测电脑是否安装了驱动（通过检测注册表中有没有对应的驱动项 0001，以及 设备管理器 中有无“3D 视频控制器”来确定）如果没有安装启动则会自动静默执行Install-NVIDIA.ps1代码
+
+Setup-AutoCheck.ps1：将Check-Driver.ps1设置为开机自动运行程序
+
+
+使用步骤：
+在所有工作开始之前，先安装一次V100驱动，如果你之前安装了就不用安装了，在注册表编辑器中按以下路径HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}找到你V100驱动对应的号数是多少，后面要用，我这里只有我的两张独显的驱动，其中V100是0001，另一张独显是0000
+
+1.将Install-NVIDIA.ps1，Check-Driver.ps1，Setup-AutoCheck.ps1三个脚本都放在桌面
+
+2.修改Install-NVIDIA中驱动路径：用记事本或者VScode等编辑器打开Install-NVIDIA.ps1，随后将23行的$driverPath 后面的路径改为你自己的驱动文件中的Display.Driver位置（“驱动文件怎么来的？”去下官网一个 7-zip 然后右键你下载的  英伟达驱动.exe  显示更多选项  7-zip  解压  解压出来的就是驱动文件）我这里是用的我放在D盘的551.61-data-center-tesla-desktop-win10-win11-64bit-dch-international
+
+3.修改Install-NVIDIA中注册表路径：在 注册表编辑器 中看自己的显卡对应的号数，路径
+HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\
+我这里0001是我的V100，所以就把60行$regPathV100改为HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0001
+另一张独显是0000，所以就把 61行$regPath0000改为HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000
+
+4.修改Check-Driver中注册表路径：同理打开Check-Driver.ps1，把第5行$regPath改为你注册表中V100的路径，和上面的$regPathV100相同
+
+
+修改完后就完成了，用Display Driver Uninstaller（DDU）清除Nvidia驱动并重启。
+重启后以管理员身份启动Windows PowerShell，输入
+powershell -ExecutionPolicy Bypass -File "C:\Users\24736\Desktop\Check-Driver.ps1" -Encoding UTF8
+就可以手动执行一次检测有无驱动并判断是否安装驱动（注意：如果你安装了驱动但 设备管理器中 V100报错，或者设备管理器中没有 “3D 视频控制器”这个选项则不会进行安装，需要先用Display Driver Uninstaller（DDU）清除并重启一次电脑以后才能正常运行脚本）
+正常运行完Install-NVIDIA.ps1后电脑会自动重启，重启完后你就可以看到可以正常识别到两张显卡了。
+
+
+此外，我的电脑成功识别到显卡以后关机第二天我发现又识别不到了，重启也没用，只能重新装驱动才行，所以我又写了一个Setup-AutoCheck.ps1脚本，每次开机都会进行检测并安装驱动。以管理员身份运行Windows PowerShell，输入
+powershell -ExecutionPolicy Bypass -File "C:\Users\24736\Desktop\Setup-AutoCheck.ps1" -Encoding UTF8
+即可把Check-Driver设置为开机自动项。这样只需要运行一次Setup-AutoCheck.ps1以后每次开机都省事了。
+但要注意，每次关机的时候都要用Display Driver Uninstaller（DDU）清除驱动并关机。
